@@ -23,15 +23,20 @@ void main() async {
 }
 
 class ChatApp extends StatelessWidget {
+  // ユーザーの情報を管理するデータ
+  final UserState userState = UserState();
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ChatApp',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider<UserState>(
+      create: (context) => UserState(),
+      child: MaterialApp(
+        title: 'ChatApp',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: LoginPage(),
       ),
-      home: LoginPage(),
     );
   }
 }
@@ -50,6 +55,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ユーザー情報を受け取る
+    final UserState userState = Provider.of<UserState>(context);
     return Scaffold(
       body: Center(
         child: Container(
@@ -94,11 +101,13 @@ class _LoginPageState extends State<LoginPage> {
                         email: email,
                         password: password,
                       );
+                      // ユーザー情報を更新
+                      userState.setUser(result.user!);
                       // ユーザー登録に成功した場合
                       // チャット画面に遷移＋ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return ChatPage(result.user!);
+                          return ChatPage();
                         }),
                       );
                     } catch (e) {
@@ -124,11 +133,13 @@ class _LoginPageState extends State<LoginPage> {
                         email: email,
                         password: password,
                       );
+                      // ユーザー情報を更新
+                      userState.setUser(result.user!);
                       // ログインに成功した場合
                       // チャット画面に遷移＋ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return ChatPage(result.user!);
+                          return ChatPage();
                         }),
                       );
                     } catch (e) {
@@ -150,12 +161,14 @@ class _LoginPageState extends State<LoginPage> {
 
 // チャット画面用Widget
 class ChatPage extends StatelessWidget {
-  // 引数からユーザー情報を受け取れるようにする
-  ChatPage(this.user);
-  // ユーザー情報
-  final User user;
+  ChatPage();
+
   @override
   Widget build(BuildContext context) {
+    // ユーザー情報を受け取る
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('チャット'),
@@ -237,7 +250,7 @@ class ChatPage extends StatelessWidget {
           // 投稿画面に遷移
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) {
-              return AddPostPage(user);
+              return AddPostPage();
             }),
           );
         },
@@ -248,10 +261,7 @@ class ChatPage extends StatelessWidget {
 
 // 投稿画面用Widget
 class AddPostPage extends StatefulWidget {
-  // 引数からユーザー情報を受け取る
-  AddPostPage(this.user);
-  // ユーザー情報
-  final User user;
+  AddPostPage();
 
   @override
   _AddPostPageState createState() => _AddPostPageState();
@@ -262,6 +272,10 @@ class _AddPostPageState extends State<AddPostPage> {
   String messageText = '';
   @override
   Widget build(BuildContext context) {
+    // ユーザー情報を受け取る
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('チャット投稿'),
@@ -293,7 +307,7 @@ class _AddPostPageState extends State<AddPostPage> {
                   onPressed: () async {
                     final date =
                     DateTime.now().toLocal().toIso8601String(); // 現在の日時
-                    final email = widget.user.email; // AddPostPage のデータを参照
+                    final email = user.email; // AddPostPage のデータを参照
                     // 投稿メッセージ用ドキュメント作成
                     await FirebaseFirestore.instance
                         .collection('posts') // コレクションID指定
