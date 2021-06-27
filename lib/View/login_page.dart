@@ -1,9 +1,10 @@
 // ログイン画面用Widget
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mychatapp2/View/chat_page.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'package:provider/provider.dart';
+
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                       // チャット画面に遷移＋ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return ChatPage();
+                          return HomePage();
                         }),
                       );
                     } catch (e) {
@@ -101,9 +102,8 @@ class _LoginPageState extends State<LoginPage> {
                       // ログインに成功した場合
                       // チャット画面に遷移＋ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) {
-                          return ChatPage();
-                        }),
+                        MaterialPageRoute(builder: (context) => HomePage()
+                        ),
                       );
                     } catch (e) {
                       // ログインに失敗した場合

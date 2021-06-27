@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mychatapp2/Model/room_model.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mychatapp2/Model/user_state.dart';
@@ -9,13 +10,13 @@ import 'login_page.dart';
 
 // チャット画面用Widget
 class ChatPage extends StatelessWidget {
-  ChatPage();
-
   @override
   Widget build(BuildContext context) {
     // ユーザー情報を受け取る
     final UserState userState = Provider.of<UserState>(context);
     final User user = userState.user!;
+    final RoomModel roomModel = Provider.of<RoomModel>(context);
+    final String roomId = roomModel.roomId;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,14 +46,17 @@ class ChatPage extends StatelessWidget {
             child: Text('ログイン情報：${user.email}'),
           ),
           Expanded(
+
             // StreamBuilder
             // 非同期処理の結果を元にWidgetを作れる
             child: StreamBuilder<QuerySnapshot>(
               // 投稿メッセージ一覧を取得（非同期処理）
               // 投稿日時でソート
+
               stream: FirebaseFirestore.instance
                   .collection('posts')
-                  .orderBy('date')
+                  .where('roomId', isEqualTo: roomId)
+                  .orderBy('date', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
@@ -123,6 +127,8 @@ class _AddPostPageState extends State<AddPostPage> {
     // ユーザー情報を受け取る
     final UserState userState = Provider.of<UserState>(context);
     final User user = userState.user!;
+    final RoomModel roomModel = Provider.of<RoomModel>(context);
+    final String roomId = roomModel.roomId;
 
     return Scaffold(
       appBar: AppBar(
@@ -163,7 +169,8 @@ class _AddPostPageState extends State<AddPostPage> {
                         .set({
                       'text': messageText,
                       'email': email,
-                      'date': date
+                      'date': date,
+                      'roomId': roomId,
                     });
                     // 1つ前の画面に戻る
                     Navigator.of(context).pop();
