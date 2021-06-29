@@ -35,7 +35,9 @@ class ChatApp extends StatelessWidget {
       child: MaterialApp(
         title: 'ChatApp',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          brightness: Brightness.light,
+          primaryColor: Colors.lightBlueAccent,
+          accentColor: Colors.cyan[600],
         ),
         home: HomePage(),
       ),

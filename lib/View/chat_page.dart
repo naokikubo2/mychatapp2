@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mychatapp2/Model/user_state.dart';
 import 'login_page.dart';
+import 'package:intl/intl.dart';
 
 // チャット画面用Widget
 class ChatPage extends StatelessWidget {
@@ -17,6 +18,40 @@ class ChatPage extends StatelessWidget {
     final User user = userState.user!;
     final RoomModel roomModel = Provider.of<RoomModel>(context);
     final String roomId = roomModel.roomId;
+
+    var dateFormat = DateFormat('HH:mm:ss');
+
+    _sendMessageArea(){
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        height: 70,
+        color: Colors.white,
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.photo),
+              iconSize: 25,
+              color: Theme.of(context).primaryColor,
+              onPressed: (){},
+            ),
+            Expanded(
+              child: TextField(
+                decoration: InputDecoration.collapsed(
+                    hintText: 'Send a message'
+                ),
+                textCapitalization: TextCapitalization.sentences ,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.send),
+              iconSize: 25,
+              color: Theme.of(context).primaryColor,
+              onPressed: (){},
+            )
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -65,24 +100,66 @@ class ChatPage extends StatelessWidget {
                   // 取得した投稿メッセージ一覧を元にリスト表示
                   return ListView(
                     children: documents.map((document) {
-                      return Card(
-                        child: ListTile(
-                          title: Text(document['text']),
-                          subtitle: Text(document['email']),
-                          // 自分の投稿メッセージの場合は削除ボタンを表示
-                          trailing: document['email'] == user.email
-                              ? IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () async {
-                              // 投稿メッセージのドキュメントを削除
-                              await FirebaseFirestore.instance
-                                  .collection('posts')
-                                  .doc(document.id)
-                                  .delete();
-                            },
-                          )
-                              : null,
-                        ),
+                      return Column(
+                        children: [
+                          Container(
+                            alignment: Alignment.topRight,
+                            child: Container(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width * 0.80,
+                              ),
+                              padding: EdgeInsets.all(10),
+                              margin: EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 5,
+                                    )
+                                  ]
+                              ),
+                              child: Text(
+                                document['text'],
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                dateFormat.format(DateTime.parse(document['date'])),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black45,
+                                ),
+                              ),
+                              SizedBox(width: 10,),
+                              Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 5,
+                                        )
+                                      ]
+                                  ),
+                                  child: CircleAvatar(
+                                      radius: 15,
+                                      backgroundImage: AssetImage('images/user1.png')
+                                  )
+                              ),
+                            ],
+                          ),
+                        ],
                       );
                     }).toList(),
                   );
@@ -94,6 +171,7 @@ class ChatPage extends StatelessWidget {
               },
             ),
           ),
+          _sendMessageArea(),
         ],
       ),
       floatingActionButton: FloatingActionButton(

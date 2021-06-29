@@ -32,7 +32,69 @@ class RoomPage extends StatelessWidget {
               // 取得した投稿メッセージ一覧を元にリスト表示
               return ListView(
                 children: documents.map((document) {
-                  return Card(
+                  return GestureDetector(
+                    onTap: () async{
+                      roomModel.setRoom(document.id);
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) {
+                          return ChatPage();
+                        }),
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                              padding: EdgeInsets.all(2),
+                              child: CircleAvatar(
+                                  radius: 35,
+                                  backgroundImage: AssetImage('images/user1.png')
+                              )
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.65,
+                            padding: EdgeInsets.only(left: 20,),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(document['name'], style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        )),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(
+                                    'text',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                  Card(
                     child: new InkWell(
                       onTap: () async{
                         roomModel.setRoom(document.id);
