@@ -91,7 +91,7 @@ class ChatPage extends StatelessWidget {
               stream: FirebaseFirestore.instance
                   .collection('posts')
                   .where('roomId', isEqualTo: roomId)
-                  .orderBy('date', descending: false)
+                  .orderBy('date', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
@@ -99,6 +99,8 @@ class ChatPage extends StatelessWidget {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
                   // 取得した投稿メッセージ一覧を元にリスト表示
                   return ListView(
+                    padding: EdgeInsets.all(20),
+                    reverse: true,
                     children: documents.map((document) {
                       return Column(
                         children: [
