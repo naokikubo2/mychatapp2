@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mychatapp2/Model/user_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Model/message_model.dart';
 import 'View/home_page.dart';
 import 'footer.dart';
 import 'header.dart';
@@ -31,6 +32,7 @@ class ChatApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<UserState>(create: (_)=> UserState()),
         ChangeNotifierProvider<RoomModel>(create: (_)=> RoomModel()),
+        ChangeNotifierProvider<MessageModel>(create: (_)=> MessageModel()),
       ],
       child: MaterialApp(
         title: 'ChatApp',
