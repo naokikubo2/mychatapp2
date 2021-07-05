@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mychatapp2/Model/message_model.dart';
 import 'package:mychatapp2/Model/room_model.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,8 @@ class ChatPage extends StatelessWidget {
     final User user = userState.user!;
     final RoomModel roomModel = Provider.of<RoomModel>(context);
     final String roomId = roomModel.roomId;
+    final MessageModel messageModel = Provider.of<MessageModel>(context);
+    final String messageText = messageModel.text;
 
     var dateFormat = DateFormat('HH:mm:ss');
 
@@ -35,18 +38,37 @@ class ChatPage extends StatelessWidget {
               onPressed: (){},
             ),
             Expanded(
-              child: TextField(
+              child: TextFormField(
                 decoration: InputDecoration.collapsed(
                     hintText: 'Send a message'
                 ),
+                // 複数行のテキスト入力
+                keyboardType: TextInputType.multiline,
                 textCapitalization: TextCapitalization.sentences ,
+                onChanged: (String value) {
+                  messageModel.setMessage(value);
+                },
               ),
             ),
             IconButton(
               icon: Icon(Icons.send),
               iconSize: 25,
               color: Theme.of(context).primaryColor,
-              onPressed: (){},
+              onPressed: ()async{
+                final date =
+                DateTime.now().toLocal().toIso8601String(); // 現在の日時
+                final email = user.email; // AddPostPage のデータを参照
+                // 投稿メッセージ用ドキュメント作成
+                await FirebaseFirestore.instance
+                    .collection('posts') // コレクションID指定
+                    .doc() // ドキュメントID自動生成
+                    .set({
+                'text': messageText,
+                'email': email,
+                'date': date,
+                'roomId': roomId,
+                 });
+                },
             )
           ],
         ),
