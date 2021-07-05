@@ -1,4 +1,5 @@
 // ログイン画面用Widget
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mychatapp2/Model/user_state.dart';
@@ -66,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
                         password: password,
                       );
                       // ユーザー情報を更新
-                      userState.setUser(result.user!);
+                      userState.createUser(result.user!);
                       // ユーザー登録に成功した場合
                       // チャット画面に遷移＋ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
