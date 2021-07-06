@@ -24,72 +24,146 @@ class ChatPage extends StatelessWidget {
 
     var dateFormat = DateFormat('HH:mm:ss');
 
-    _chatBubble(MessageModel messageModel, List<DocumentSnapshot> documents){
+    _chatBubble(MessageModel messageModel, List<DocumentSnapshot> documents, User user){
+      String preUserEmail = '';
+      bool isMe;
+      bool isSame;
       return ListView(
         padding: EdgeInsets.all(20),
         reverse: true,
         children: documents.map((document) {
-          return Column(
-            children: [
-              Container(
-                alignment: Alignment.topRight,
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.80,
-                  ),
-                  padding: EdgeInsets.all(10),
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                        )
-                      ]
-                  ),
-                  child: Text(
-                    document['text'],
-                    style: TextStyle(
-                      color: Colors.white,
+          isMe = document['email'] == user.email;
+          isSame = document['email'] == preUserEmail;
+          preUserEmail = document['email'];
+          if (isMe) {
+            return Column(
+              children: [
+                Container(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.80,
+                    ),
+                    padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                          )
+                        ]
+                    ),
+                    child: Text(
+                      document['text'],
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    dateFormat.format(DateTime.parse(document['date'])),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black45,
+                !isSame ?
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      dateFormat.format(DateTime.parse(document['date'])),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black45,
+                      ),
+                    ),
+                    SizedBox(width: 10,),
+                    Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                              )
+                            ]
+                        ),
+                        child: CircleAvatar(
+                            radius: 15,
+                            backgroundImage: AssetImage('images/user1.png')
+                        )
+                    ),
+                  ],
+                ):
+                Container(child: null,),
+              ],
+            );
+          }else{
+            return Column(
+              children: [
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.80,
+                    ),
+                    padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                          )
+                        ]
+                    ),
+                    child: Text(
+                      document['text'],
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  SizedBox(width: 10,),
-                  Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                            )
-                          ]
+                ),
+                !isSame ?
+                Row(
+                  children: [
+                    Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                              )
+                            ]
+                        ),
+                        child: CircleAvatar(
+                            radius: 15,
+                            backgroundImage: AssetImage('images/user1.png')
+                        )
+                    ),
+                    SizedBox(width: 10,),
+                    Text(
+                      dateFormat.format(DateTime.parse(document['date'])),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black45,
                       ),
-                      child: CircleAvatar(
-                          radius: 15,
-                          backgroundImage: AssetImage('images/user1.png')
-                      )
-                  ),
-                ],
-              ),
-            ],
-          );
+                    ),
+                  ],
+                ):
+                Container(child: null,),
+              ],
+            );
+          }
+
         }).toList(),
       );
 
@@ -191,7 +265,7 @@ class ChatPage extends StatelessWidget {
                 if (snapshot.hasData) {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
                   // 取得した投稿メッセージ一覧を元にリスト表示
-                  return _chatBubble(messageModel, documents);
+                  return _chatBubble(messageModel, documents, userState.user!);
                 }
                 // データが読込中の場合
                 return Center(
