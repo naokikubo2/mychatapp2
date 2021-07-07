@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_page.dart';
 
 class RootPage extends StatefulWidget {
-  RootPage({required Key key}) : super(key: key);
+  //RootPage({required Key key}) : super(key: key);
 
   @override
   _RootPageState createState() => _RootPageState();
@@ -12,14 +12,15 @@ class RootPage extends StatefulWidget {
 
 class _RootPageState extends State<RootPage> {
   @override
+
   initState() {
     final currentUser = FirebaseAuth.instance.currentUser!;
-    //try {
-      //if (currentUser == null) {
+    try {
+      if (currentUser == null) {
         {
           Navigator.pushReplacementNamed(context, "/login");
         }
-      //} else {
+      } else {
         Stream<QuerySnapshot<Map<String, dynamic>>> snapshot = FirebaseFirestore.instance
             .collection("users")
             .where('uid', isEqualTo: currentUser.uid)
@@ -34,10 +35,11 @@ class _RootPageState extends State<RootPage> {
             return HomePage();
           }));
 
-      //}
-    //} catch (e) {
-    //  super.initState();
-    //}
+      }
+    } catch (e) {
+
+    }
+    super.initState();
   }
 
   @override

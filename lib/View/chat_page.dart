@@ -19,12 +19,12 @@ class ChatPage extends StatelessWidget {
     final User user = userState.user!;
     final RoomModel roomModel = Provider.of<RoomModel>(context);
     final String roomId = roomModel.roomId;
-    final MessageModel messageModel = Provider.of<MessageModel>(context);
-    final String messageText = messageModel.text;
+
+    final txt = TextEditingController();
 
     var dateFormat = DateFormat('HH:mm:ss');
 
-    _chatBubble(MessageModel messageModel, List<DocumentSnapshot> documents, User user){
+    _chatBubble(List<DocumentSnapshot> documents, User user){
       String preUserEmail = '';
       bool isMe;
       bool isSame;
@@ -170,54 +170,65 @@ class ChatPage extends StatelessWidget {
     }
 
     _sendMessageArea(){
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        height: 70,
-        color: Colors.white,
-        child: Row(
-          children: [
-            IconButton(
-              icon: Icon(Icons.photo),
-              iconSize: 25,
-              color: Theme.of(context).primaryColor,
-              onPressed: (){},
-            ),
-            Expanded(
-              child: TextFormField(
-                decoration: InputDecoration.collapsed(
-                    hintText: 'Send a message'
-                ),
-                // 複数行のテキスト入力
-                keyboardType: TextInputType.multiline,
-                textCapitalization: TextCapitalization.sentences ,
-                onChanged: (String value) {
-                  messageModel.setMessage(value);
-                },
+      //Consumer<MessageModel>(
+      //    builder: (BuildContext context, value, Widget? child) {
+
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          height: 70,
+          color: Colors.white,
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.photo),
+                iconSize: 25,
+                color: Theme.of(context).primaryColor,
+                onPressed: (){},
               ),
-            ),
-            IconButton(
-              icon: Icon(Icons.send),
-              iconSize: 25,
-              color: Theme.of(context).primaryColor,
-              onPressed: ()async{
-                final date =
-                DateTime.now().toLocal().toIso8601String(); // 現在の日時
-                final email = user.email; // AddPostPage のデータを参照
-                // 投稿メッセージ用ドキュメント作成
-                await FirebaseFirestore.instance
-                    .collection('posts') // コレクションID指定
-                    .doc() // ドキュメントID自動生成
-                    .set({
-                'text': messageText,
-                'email': email,
-                'date': date,
-                'roomId': roomId,
-                 });
+              Expanded(
+                child: TextFormField(
+
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Send a message'
+                  ),
+                  // 複数行のテキスト入力
+                  //keyboardType: TextInputType.multiline,
+                  //textCapitalization: TextCapitalization.sentences ,
+                  //onChanged: (String value) async{
+                  //  print(value);
+                  //  messageModel.setMessage(value);
+                  //},
+                  controller: txt,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.send),
+                iconSize: 25,
+                color: Theme.of(context).primaryColor,
+                onPressed: ()async {
+                  if (txt.text != '') {
+                    final date =
+                    DateTime.now().toLocal().toIso8601String(); // 現在の日時
+                    final email = user.email; // AddPostPage のデータを参照
+                    // 投稿メッセージ用ドキュメント作成
+                    await FirebaseFirestore.instance
+                        .collection('posts') // コレクションID指定
+                        .doc() // ドキュメントID自動生成
+                        .set({
+                      'text': txt.text,
+                      'email': email,
+                      'date': date,
+                      'roomId': roomId,
+                    });
+                    txt.text = '';
+                  }
                 },
-            )
-          ],
-        ),
-      );
+              )
+            ],
+          ),
+        );
+      //}
+      //);
     }
 
     return Scaffold(
@@ -265,7 +276,7 @@ class ChatPage extends StatelessWidget {
                 if (snapshot.hasData) {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
                   // 取得した投稿メッセージ一覧を元にリスト表示
-                  return _chatBubble(messageModel, documents, userState.user!);
+                  return _chatBubble(documents, userState.user!);
                 }
                 // データが読込中の場合
                 return Center(

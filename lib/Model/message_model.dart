@@ -7,7 +7,7 @@ class MessageModel extends ChangeNotifier {
   //final bool unread;
 
 
-  void setMessage(String textMessage) {
+  Future setMessage(String textMessage) async{
     text = textMessage;
     notifyListeners();
   }
