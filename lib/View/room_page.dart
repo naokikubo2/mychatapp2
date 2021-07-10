@@ -6,7 +6,6 @@ import 'package:mychatapp2/Model/room_model.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'package:provider/provider.dart';
 
-import '../footer.dart';
 import 'chat_page.dart';
 
 class RoomPage extends StatelessWidget {
@@ -94,23 +93,6 @@ class RoomPage extends StatelessWidget {
                       ),
                     ),
                   );
-                  Card(
-                    child: new InkWell(
-                      onTap: () async{
-                        roomModel.setRoom(document.id);
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) {
-                            return ChatPage();
-                          }),
-                        );
-                      },
-                      child: ListTile(
-                        title: Text(document['name']),
-                        subtitle: Text(document['email']),
-                        // 自分の投稿メッセージの場合は削除ボタンを表示
-                      ),
-                    ),
-                  );
                 }).toList(),
               );
             }
@@ -180,8 +162,6 @@ class _AddRoomPageState extends State<AddRoomPage> {
                 child: ElevatedButton(
                   child: Text('作成'),
                   onPressed: () async {
-                    final date =
-                    DateTime.now().toLocal().toIso8601String(); // 現在の日時
                     final email = user.email; // AddPostPage のデータを参照
                     // 投稿メッセージ用ドキュメント作成
                     await FirebaseFirestore.instance

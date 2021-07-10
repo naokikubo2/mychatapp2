@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:mychatapp2/Model/message.dart';
 import 'package:mychatapp2/Model/message_model.dart';
 import 'package:mychatapp2/Model/room_model.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'login_page.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 
 // チャット画面用Widget
 class ChatPage extends StatelessWidget {
@@ -19,22 +24,25 @@ class ChatPage extends StatelessWidget {
     final User user = userState.user!;
     final RoomModel roomModel = Provider.of<RoomModel>(context);
     final String roomId = roomModel.roomId;
+    final MessageModel messageModel = Provider.of<MessageModel>(context);
 
     final txt = TextEditingController();
 
     var dateFormat = DateFormat('HH:mm:ss');
 
-    _chatBubble(List<DocumentSnapshot> documents, User user){
-      String preUserEmail = '';
+    final picker = ImagePicker();
+
+    _chatBubble(List<Message> messages, User user){
+      String preUserId = '';
       bool isMe;
       bool isSame;
       return ListView(
         padding: EdgeInsets.all(20),
         reverse: true,
-        children: documents.map((document) {
-          isMe = document['email'] == user.email;
-          isSame = document['email'] == preUserEmail;
-          preUserEmail = document['email'];
+        children: messages.map((message) {
+          isMe = message.uid == user.uid;
+          isSame = message.uid == preUserId;
+          preUserId = message.uid;
           if (isMe) {
             return Column(
               children: [
@@ -58,7 +66,7 @@ class ChatPage extends StatelessWidget {
                         ]
                     ),
                     child: Text(
-                      document['text'],
+                      message.text,
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -70,7 +78,7 @@ class ChatPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      dateFormat.format(DateTime.parse(document['date'])),
+                      dateFormat.format(message.createAt),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.black45,
@@ -122,7 +130,7 @@ class ChatPage extends StatelessWidget {
                         ]
                     ),
                     child: Text(
-                      document['text'],
+                      message.text,
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -151,7 +159,7 @@ class ChatPage extends StatelessWidget {
                     ),
                     SizedBox(width: 10,),
                     Text(
-                      dateFormat.format(DateTime.parse(document['date'])),
+                      dateFormat.format(message.createAt),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.black45,
@@ -183,7 +191,16 @@ class ChatPage extends StatelessWidget {
                 icon: Icon(Icons.photo),
                 iconSize: 25,
                 color: Theme.of(context).primaryColor,
-                onPressed: (){},
+                onPressed: ()async{
+                  try{
+                    var _imageFileList = await picker.getImage(source: ImageSource.gallery);
+                    File _image = File(_imageFileList!.path);
+                    Image.file(_image);
+                  }
+                  on PlatformException catch (err) {
+                    print(err);
+                  }
+                },
               ),
               Expanded(
                 child: TextFormField(
@@ -192,8 +209,9 @@ class ChatPage extends StatelessWidget {
                       hintText: 'Send a message'
                   ),
                   // 複数行のテキスト入力
-                  //keyboardType: TextInputType.multiline,
-                  //textCapitalization: TextCapitalization.sentences ,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences ,
                   //onChanged: (String value) async{
                   //  print(value);
                   //  messageModel.setMessage(value);
@@ -207,19 +225,7 @@ class ChatPage extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
                 onPressed: ()async {
                   if (txt.text != '') {
-                    final date =
-                    DateTime.now().toLocal().toIso8601String(); // 現在の日時
-                    final email = user.email; // AddPostPage のデータを参照
-                    // 投稿メッセージ用ドキュメント作成
-                    await FirebaseFirestore.instance
-                        .collection('posts') // コレクションID指定
-                        .doc() // ドキュメントID自動生成
-                        .set({
-                      'text': txt.text,
-                      'email': email,
-                      'date': date,
-                      'roomId': roomId,
-                    });
+                    messageModel.setMessage(txt.text, user.uid, roomId);
                     txt.text = '';
                   }
                 },
@@ -259,30 +265,17 @@ class ChatPage extends StatelessWidget {
             child: Text('ログイン情報：${user.email}'),
           ),
           Expanded(
-
-            // StreamBuilder
-            // 非同期処理の結果を元にWidgetを作れる
-            child: StreamBuilder<QuerySnapshot>(
-              // 投稿メッセージ一覧を取得（非同期処理）
-              // 投稿日時でソート
-
-              stream: FirebaseFirestore.instance
-                  .collection('posts')
-                  .where('roomId', isEqualTo: roomId)
-                  .orderBy('date', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                // データが取得できた場合
-                if (snapshot.hasData) {
-                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                  // 取得した投稿メッセージ一覧を元にリスト表示
-                  return _chatBubble(documents, userState.user!);
-                }
-                // データが読込中の場合
-                return Center(
-                  child: Text('読込中...'),
-                );
-              },
+            child: ChangeNotifierProvider<MessageModel>(
+                create: (_) => MessageModel()..fetchMessages(roomModel.roomId),
+                child: Consumer<MessageModel>(
+                  builder: (context, model, child) {
+                    final messages = model.messages;
+                    if (messages.isNotEmpty) {
+                      return _chatBubble(messages, userState.user!);
+                    }
+                    return Center(child: Text('読込中...'),);
+                    },
+                )
             ),
           ),
           _sendMessageArea(),
