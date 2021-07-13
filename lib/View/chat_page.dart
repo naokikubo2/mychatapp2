@@ -32,6 +32,12 @@ class ChatPage extends StatelessWidget {
 
     final picker = ImagePicker();
 
+    Future getImageFromGallery() async {
+      final pickedFile = await picker.getImage(source: ImageSource.gallery);
+      File _image = File(pickedFile!.path);
+      Image.file(_image);
+    }
+
     _chatBubble(List<Message> messages, User user){
       String preUserId = '';
       bool isMe;
@@ -191,16 +197,8 @@ class ChatPage extends StatelessWidget {
                 icon: Icon(Icons.photo),
                 iconSize: 25,
                 color: Theme.of(context).primaryColor,
-                onPressed: ()async{
-                  try{
-                    var _imageFileList = await picker.getImage(source: ImageSource.gallery);
-                    File _image = File(_imageFileList!.path);
-                    Image.file(_image);
-                  }
-                  on PlatformException catch (err) {
-                    print(err);
-                  }
-                },
+                onPressed: getImageFromGallery,
+                tooltip: 'Pick Image From Gallery',
               ),
               Expanded(
                 child: TextFormField(
@@ -282,6 +280,9 @@ class ChatPage extends StatelessWidget {
         ],
       ),
     );
+
   }
+
+
 }
 
