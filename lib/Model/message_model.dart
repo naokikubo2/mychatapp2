@@ -1,10 +1,37 @@
+import 'dart:io';
+import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'message.dart';
 
 class MessageModel extends ChangeNotifier {
   List<Message> messages = [];
+
+  late File imageFile;
+  Future showImagePicker(String uid, String roomId) async {
+    final picker = ImagePicker();
+    final pickerFile = await picker.getImage(source: ImageSource.gallery);
+    if (pickerFile != null) {
+      imageFile = File(pickerFile.path);
+      final imageUrl = await _uploadImage(imageFile, uid);
+      setMessageImage(imageUrl, uid, roomId);
+    }
+  }
+
+  String imageUrl='';
+  Future<String> _uploadImage(File file, String uid) async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+    final timeStamp = Timestamp.now();
+    final String fileName = basename(file.path);
+    Reference ref = storage.ref().child("images/$timeStamp-$fileName");
+    UploadTask uploadTask = ref.putFile(file);
+    final TaskSnapshot downloadUrl= (await uploadTask);
+    final String url= await downloadUrl.ref.getDownloadURL();
+    return url;
+  }
 
   void fetchMessages(String roomId) {
     final snapshots = FirebaseFirestore.instance
@@ -32,6 +59,23 @@ class MessageModel extends ChangeNotifier {
       'createAt': createAt,
       'roomId': roomId,
       'imagePath': '',
+      'unread': true,
+    });
+    notifyListeners();
+  }
+
+  Future setMessageImage(String imageUrl, String uid, String roomId) async{
+    final createAt = DateTime.now().toLocal(); // 現在の日時
+    // 投稿メッセージ用ドキュメント作成
+    await FirebaseFirestore.instance
+        .collection('messages') // コレクションID指定
+        .doc() // ドキュメントID自動生成
+        .set({
+      'text': '',
+      'uid': uid,
+      'createAt': createAt,
+      'roomId': roomId,
+      'imagePath': imageUrl,
       'unread': true,
     });
     notifyListeners();

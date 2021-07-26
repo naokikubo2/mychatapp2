@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:mychatapp2/Model/message.dart';
 import 'package:mychatapp2/Model/message_model.dart';
@@ -13,7 +11,6 @@ import 'package:provider/provider.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'login_page.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
 
 // チャット画面用Widget
 class ChatPage extends StatelessWidget {
@@ -30,13 +27,7 @@ class ChatPage extends StatelessWidget {
 
     var dateFormat = DateFormat('HH:mm:ss');
 
-    final picker = ImagePicker();
-
-    Future getImageFromGallery() async {
-      final pickedFile = await picker.getImage(source: ImageSource.gallery);
-      File _image = File(pickedFile!.path);
-      Image.file(_image);
-    }
+    bool visibleLoading = false;
 
     _chatBubble(List<Message> messages, User user){
       String preUserId = '';
@@ -71,12 +62,15 @@ class ChatPage extends StatelessWidget {
                           )
                         ]
                     ),
-                    child: Text(
+                    child:
+                    (message.imagePath == '') ?
+                    Text(
                       message.text,
                       style: TextStyle(
                         color: Colors.white,
                       ),
-                    ),
+                    ):
+                    Image.network(message.imagePath)
                   ),
                 ),
                 !isSame ?
@@ -197,12 +191,15 @@ class ChatPage extends StatelessWidget {
                 icon: Icon(Icons.photo),
                 iconSize: 25,
                 color: Theme.of(context).primaryColor,
-                onPressed: getImageFromGallery,
+                onPressed: ()async{
+                  visibleLoading = true;
+                  await messageModel.showImagePicker(user.uid, roomId);
+                  visibleLoading = false;
+                },
                 tooltip: 'Pick Image From Gallery',
               ),
               Expanded(
                 child: TextFormField(
-
                   decoration: InputDecoration.collapsed(
                       hintText: 'Send a message'
                   ),
@@ -210,10 +207,6 @@ class ChatPage extends StatelessWidget {
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences ,
-                  //onChanged: (String value) async{
-                  //  print(value);
-                  //  messageModel.setMessage(value);
-                  //},
                   controller: txt,
                 ),
               ),
@@ -231,8 +224,6 @@ class ChatPage extends StatelessWidget {
             ],
           ),
         );
-      //}
-      //);
     }
 
     return Scaffold(
@@ -278,7 +269,9 @@ class ChatPage extends StatelessWidget {
           ),
           _sendMessageArea(),
         ],
+
       ),
+
     );
 
   }
