@@ -43,7 +43,7 @@ class ChatApp extends StatelessWidget {
           primaryColor: Colors.lightBlueAccent,
           accentColor: Colors.cyan[600],
         ),
-        home: HomePage(),
+        home: _LoginCheck(),
           routes: <String,WidgetBuilder>{
             '/home':(BuildContext context) => HomePage(),
             '/login':(BuildContext context) => LoginPage(),
@@ -52,6 +52,16 @@ class ChatApp extends StatelessWidget {
           }
       ),
     );
+  }
+}
+
+class _LoginCheck extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // ログイン状態に応じて、画面を切り替える
+    final bool _loggedIn = Provider.of<UserState>(context).checkUser();
+    return _loggedIn
+        ? HomePage() : LoginPage();
   }
 }
 
