@@ -28,8 +28,7 @@ class HomePage extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () async {
                             await FirebaseAuth.instance.signOut();
-                            await Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (BuildContext ctx) => LoginPage()));
+                            await Navigator.pushReplacementNamed(context, "/login");
                           },
                           child: Text('Logout'),
                         ),
@@ -38,12 +37,7 @@ class HomePage extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             // Navigate to the second screen when tapped.
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return RoomPage();
-                                }),
-                            );
+                            Navigator.pushNamed(context, "/room");
                           },
                           child: Text('ルーム'),
                         ),

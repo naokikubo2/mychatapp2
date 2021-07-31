@@ -8,7 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Model/message_model.dart';
+import 'View/chat_page.dart';
 import 'View/home_page.dart';
+import 'View/room_page.dart';
 import 'footer.dart';
 import 'header.dart';
 
@@ -42,6 +44,12 @@ class ChatApp extends StatelessWidget {
           accentColor: Colors.cyan[600],
         ),
         home: HomePage(),
+          routes: <String,WidgetBuilder>{
+            '/home':(BuildContext context) => HomePage(),
+            '/login':(BuildContext context) => LoginPage(),
+            '/room':(BuildContext context) => RoomPage(),
+            '/chat':(BuildContext context) => ChatPage(),
+          }
       ),
     );
   }

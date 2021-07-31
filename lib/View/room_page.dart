@@ -34,11 +34,7 @@ class RoomPage extends StatelessWidget {
                   return GestureDetector(
                     onTap: () async{
                       roomModel.setRoom(document.id);
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) {
-                          return ChatPage();
-                        }),
-                      );
+                      await Navigator.pushNamed(context, "/chat");
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(
