@@ -27,13 +27,12 @@ class ChatPage extends StatelessWidget {
 
     var dateFormat = DateFormat('HH:mm:ss');
 
-    bool visibleLoading = false;
-
     _chatBubble(List<Message> messages, User user){
       String preUserId = '';
       bool isMe;
       bool isSame;
       return ListView(
+        cacheExtent: 1400,
         padding: EdgeInsets.all(20),
         reverse: true,
         children: messages.map((message) {
@@ -129,12 +128,15 @@ class ChatPage extends StatelessWidget {
                           )
                         ]
                     ),
-                    child: Text(
+                    child:
+                    (message.imagePath == '') ?
+                    Text(
                       message.text,
                       style: TextStyle(
                         color: Colors.white,
                       ),
-                    ),
+                    ):
+                    Image.network(message.imagePath)
                   ),
                 ),
                 !isSame ?
@@ -192,9 +194,11 @@ class ChatPage extends StatelessWidget {
                 iconSize: 25,
                 color: Theme.of(context).primaryColor,
                 onPressed: ()async{
-                  visibleLoading = true;
+                  messageModel.startLoading();
+                  print(messageModel.isLoading);
                   await messageModel.showImagePicker(user.uid, roomId);
-                  visibleLoading = false;
+                  messageModel.endLoading();
+                  print(messageModel.isLoading);
                 },
                 tooltip: 'Pick Image From Gallery',
               ),
@@ -256,14 +260,25 @@ class ChatPage extends StatelessWidget {
           Expanded(
             child: ChangeNotifierProvider<MessageModel>(
                 create: (_) => MessageModel()..fetchMessages(roomModel.roomId),
-                child: Consumer<MessageModel>(
-                  builder: (context, model, child) {
-                    final messages = model.messages;
-                    if (messages.isNotEmpty) {
-                      return _chatBubble(messages, userState.user!);
-                    }
-                    return Center(child: Text('読込中...'),);
-                    },
+                child: Stack(
+                  children: [
+                    Consumer<MessageModel>(
+                      builder: (context, model, child) {
+                        final messages = model.messages;
+                        if (messages.isNotEmpty) {
+                          return _chatBubble(messages, userState.user!);
+                        }
+                        return Center(child: Text('読込中...'),);
+                        },
+                    ),
+                        messageModel.isLoading ? Container(
+                          color: Colors.grey.withOpacity(0.5),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                            : Container(),
+                  ],
                 )
             ),
           ),

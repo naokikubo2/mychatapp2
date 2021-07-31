@@ -9,12 +9,24 @@ import 'message.dart';
 
 class MessageModel extends ChangeNotifier {
   List<Message> messages = [];
+  bool isLoading = false;
+
+  startLoading(){
+    isLoading = true;
+    notifyListeners();
+  }
+
+  endLoading(){
+    isLoading = false;
+    notifyListeners();
+  }
 
   late File imageFile;
   Future showImagePicker(String uid, String roomId) async {
     final picker = ImagePicker();
     final pickerFile = await picker.getImage(source: ImageSource.gallery);
     if (pickerFile != null) {
+      startLoading();
       imageFile = File(pickerFile.path);
       final imageUrl = await _uploadImage(imageFile, uid);
       setMessageImage(imageUrl, uid, roomId);
@@ -78,6 +90,7 @@ class MessageModel extends ChangeNotifier {
       'imagePath': imageUrl,
       'unread': true,
     });
+    isLoading = false;
     notifyListeners();
   }
 }
