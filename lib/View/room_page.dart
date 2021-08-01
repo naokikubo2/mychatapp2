@@ -13,6 +13,7 @@ class RoomPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final RoomModel roomModel = Provider.of<RoomModel>(context);
+    String latestMessage = '';
     return Scaffold(
       appBar: AppBar(
         title: Text('ルーム'),
@@ -31,6 +32,9 @@ class RoomPage extends StatelessWidget {
               // 取得した投稿メッセージ一覧を元にリスト表示
               return ListView(
                 children: documents.map((document) {
+                  if (document['latestMessage'] != null){
+                    latestMessage = document['latestMessage'];
+                  }
                   return GestureDetector(
                     onTap: () async{
                       roomModel.setRoom(document.id);
@@ -74,7 +78,7 @@ class RoomPage extends StatelessWidget {
                                 Container(
                                   alignment: Alignment.topLeft,
                                   child: Text(
-                                    'text',
+                                    latestMessage,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.black54,
@@ -166,6 +170,7 @@ class _AddRoomPageState extends State<AddRoomPage> {
                         .set({
                       'name': messageText,
                       'email': email,
+                      'latestMessage': 'メッセージがありません。',
                     });
                     // 1つ前の画面に戻る
                     Navigator.of(context).pop();

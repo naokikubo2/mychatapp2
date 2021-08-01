@@ -73,6 +73,7 @@ class MessageModel extends ChangeNotifier {
       'imagePath': '',
       'unread': true,
     });
+    setLatestMessage(roomId, text, false);
     notifyListeners();
   }
 
@@ -91,6 +92,19 @@ class MessageModel extends ChangeNotifier {
       'unread': true,
     });
     isLoading = false;
+    setLatestMessage(roomId, '', true);
     notifyListeners();
+  }
+
+  setLatestMessage(String roomId, String message, bool isImage){
+     if (isImage){
+       message = '画像を送信しました。';
+     }
+    FirebaseFirestore.instance
+        .collection('rooms') // コレクションID指定
+        .doc(roomId) // ドキュメントID自動生成
+        .update({
+      'latestMessage': message,
+    });
   }
 }
