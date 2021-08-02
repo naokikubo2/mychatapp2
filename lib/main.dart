@@ -41,7 +41,7 @@ class ChatApp extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.light,
           primaryColor: Colors.lightBlueAccent,
-          accentColor: Colors.cyan[600],
+          accentColor: Colors.lightBlueAccent[600],
         ),
         home: _LoginCheck(),
           routes: <String,WidgetBuilder>{

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:mychatapp2/Model/room_model.dart';
 import 'package:mychatapp2/Model/user_state.dart';
 import 'package:provider/provider.dart';
-
-import 'chat_page.dart';
 
 class RoomPage extends StatelessWidget {
 
@@ -104,7 +104,7 @@ class RoomPage extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(CupertinoIcons.wand_stars),
+        child: Icon(CupertinoIcons.add),
         onPressed: () async{
           //処理
           await Navigator.of(context).push(
@@ -132,54 +132,100 @@ class _AddRoomPageState extends State<AddRoomPage> {
   Widget build(BuildContext context) {
     final UserState userState = Provider.of<UserState>(context);
     final User user = userState.user!;
-
     return Scaffold(
       appBar: AppBar(
           title: Text('ルーム作成')
       ),
-      body: Center(
-        child: Container(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // 投稿メッセージ入力
-              TextFormField(
-                decoration: InputDecoration(labelText: 'ルーム名'),
-                // 複数行のテキスト入力
-                keyboardType: TextInputType.multiline,
-                // 最大3行
-                maxLines: 3,
-                onChanged: (String value) {
-                  setState(() {
-                    messageText = value;
-                  });
-                },
+      body: Consumer<RoomModel>(
+        builder: (context, model, child) {
+          return Center(
+            child: Container(
+              padding: EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    //width: double.infinity,
+                    child: Column(
+                        children:[
+                          SizedBox(
+                            width: 200,
+                            height: 200,
+                            child: InkWell(
+                                onTap: ()async{
+                                  await model.showImagePicker();
+                                },
+                                child: model.imageFile != null ?
+                                ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Image.file(model.imageFile!, fit: BoxFit.fill,)
+                                )
+                                    :
+                                Stack(
+                                  children:[
+                                    Container(
+                                      padding: EdgeInsets.all(2),
+                                      width: 200,
+                                      height: 200,
+                                      child: CircleAvatar(
+                                          radius: 35,
+                                          backgroundImage: AssetImage('images/エレキギター_アイコン.png')
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.all(70),
+                                      width: 50,
+                                      height: 50,
+                                      alignment: Alignment.center,
+                                      child: Image(image: AssetImage('images/upload_icon.png'), fit: BoxFit.fill,),
+                                      ),
+                                  ]
+                                ),
+                            ),
+                          ),
+
+                        ]
+                    ),
+                  ),
+                  // 投稿メッセージ入力
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'ルーム名'),
+                    // 複数行のテキスト入力
+                    keyboardType: TextInputType.multiline,
+                    // 最大3行
+                    maxLines: 3,
+                    onChanged: (String value) {
+                      setState(() {
+                        messageText = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      child: Text('作成'),
+                      onPressed: () async {
+                        final email = user.email; // AddPostPage のデータを参照
+                        // 投稿メッセージ用ドキュメント作成
+                        await FirebaseFirestore.instance
+                            .collection('rooms') // コレクションID指定
+                            .doc() // ドキュメントID自動生成
+                            .set({
+                          'name': messageText,
+                          'email': email,
+                          'latestMessage': 'メッセージがありません。',
+                        });
+                        // 1つ前の画面に戻る
+                        Navigator.of(context).pop();
+                      },),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  child: Text('作成'),
-                  onPressed: () async {
-                    final email = user.email; // AddPostPage のデータを参照
-                    // 投稿メッセージ用ドキュメント作成
-                    await FirebaseFirestore.instance
-                        .collection('rooms') // コレクションID指定
-                        .doc() // ドキュメントID自動生成
-                        .set({
-                      'name': messageText,
-                      'email': email,
-                      'latestMessage': 'メッセージがありません。',
-                    });
-                    // 1つ前の画面に戻る
-                    Navigator.of(context).pop();
-                  },
-                ),
-              )
-            ],
-          ),
-        ),
+            ),
+          );
+        }
       ),
     );
   }

@@ -38,7 +38,7 @@ class MessageModel extends ChangeNotifier {
     FirebaseStorage storage = FirebaseStorage.instance;
     final timeStamp = Timestamp.now();
     final String fileName = basename(file.path);
-    Reference ref = storage.ref().child("images/$timeStamp-$fileName");
+    Reference ref = storage.ref().child("images/chat/$timeStamp-$fileName");
     UploadTask uploadTask = ref.putFile(file);
     final TaskSnapshot downloadUrl= (await uploadTask);
     final String url= await downloadUrl.ref.getDownloadURL();
