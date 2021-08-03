@@ -37,7 +37,7 @@ class RoomPage extends StatelessWidget {
                   }
                   return GestureDetector(
                     onTap: () async{
-                      roomModel.setRoom(document.id);
+                      roomModel.fetchRoom(document.id);
                       await Navigator.pushNamed(context, "/chat");
                     },
                     child: Container(
@@ -47,11 +47,21 @@ class RoomPage extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
+                          (document['imagePath'] != '') ?
+                          Container(
+                              padding: EdgeInsets.all(2),
+                              width: 75,
+                              height: 75,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.network(document['imagePath'], fit: BoxFit.fill,),
+                              )
+                          ):
                           Container(
                               padding: EdgeInsets.all(2),
                               child: CircleAvatar(
-                                  radius: 35,
-                                  backgroundImage: AssetImage('images/user1.png')
+                                radius: 35,
+                                  backgroundImage: AssetImage('images/エレキギター_アイコン.png'),
                               )
                           ),
                           Container(
@@ -183,7 +193,6 @@ class _AddRoomPageState extends State<AddRoomPage> {
                                 ),
                             ),
                           ),
-
                         ]
                     ),
                   ),
@@ -209,14 +218,12 @@ class _AddRoomPageState extends State<AddRoomPage> {
                       onPressed: () async {
                         final email = user.email; // AddPostPage のデータを参照
                         // 投稿メッセージ用ドキュメント作成
-                        await FirebaseFirestore.instance
-                            .collection('rooms') // コレクションID指定
-                            .doc() // ドキュメントID自動生成
-                            .set({
-                          'name': messageText,
-                          'email': email,
-                          'latestMessage': 'メッセージがありません。',
-                        });
+                        if(model.imageFile == null) {
+                          await model.setRoom(messageText, email!);
+                        }else{
+                          await model.setRoomImage(messageText, email!, model.imageFile!);
+                        }
+                        model.imageFile = null;
                         // 1つ前の画面に戻る
                         Navigator.of(context).pop();
                       },),
