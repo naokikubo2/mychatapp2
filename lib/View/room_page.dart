@@ -149,87 +149,99 @@ class _AddRoomPageState extends State<AddRoomPage> {
       body: Consumer<RoomModel>(
         builder: (context, model, child) {
           return Center(
-            child: Container(
-              padding: EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    //width: double.infinity,
-                    child: Column(
-                        children:[
-                          SizedBox(
-                            width: 200,
-                            height: 200,
-                            child: InkWell(
-                                onTap: ()async{
-                                  await model.showImagePicker();
-                                },
-                                child: model.imageFile != null ?
-                                ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: Image.file(model.imageFile!, fit: BoxFit.fill,)
-                                )
-                                    :
-                                Stack(
-                                  children:[
-                                    Container(
-                                      padding: EdgeInsets.all(2),
-                                      width: 200,
-                                      height: 200,
-                                      child: CircleAvatar(
-                                          radius: 35,
-                                          backgroundImage: AssetImage('images/エレキギター_アイコン.png')
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.all(70),
-                                      width: 50,
-                                      height: 50,
-                                      alignment: Alignment.center,
-                                      child: Image(image: AssetImage('images/upload_icon.png'), fit: BoxFit.fill,),
-                                      ),
-                                  ]
+            child: Stack(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        //width: double.infinity,
+                        child: Column(
+                            children:[
+                              SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: InkWell(
+                                  onTap: ()async{
+                                    await model.showImagePicker();
+                                  },
+                                  child: model.imageFile != null ?
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.circular(100),
+                                      child: Image.file(model.imageFile!, fit: BoxFit.fill,)
+                                  )
+                                      :
+                                  Stack(
+                                      children:[
+                                        Container(
+                                          padding: EdgeInsets.all(2),
+                                          width: 200,
+                                          height: 200,
+                                          child: CircleAvatar(
+                                              radius: 35,
+                                              backgroundImage: AssetImage('images/エレキギター_アイコン.png')
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(70),
+                                          width: 50,
+                                          height: 50,
+                                          alignment: Alignment.center,
+                                          child: Image(image: AssetImage('images/upload_icon.png'), fit: BoxFit.fill,),
+                                        ),
+                                      ]
+                                  ),
                                 ),
-                            ),
-                          ),
-                        ]
-                    ),
-                  ),
-                  // 投稿メッセージ入力
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'ルーム名'),
-                    // 複数行のテキスト入力
-                    keyboardType: TextInputType.multiline,
-                    // 最大3行
-                    maxLines: 3,
-                    onChanged: (String value) {
-                      setState(() {
-                        messageText = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
+                              ),
+                            ]
+                        ),
+                      ),
+                      // 投稿メッセージ入力
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'ルーム名'),
+                        // 複数行のテキスト入力
+                        keyboardType: TextInputType.multiline,
+                        // 最大3行
+                        maxLines: 3,
+                        onChanged: (String value) {
+                          setState(() {
+                            messageText = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 8),
 
-                  Container(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      child: Text('作成'),
-                      onPressed: () async {
-                        final email = user.email; // AddPostPage のデータを参照
-                        // 投稿メッセージ用ドキュメント作成
-                        if(model.imageFile == null) {
-                          await model.setRoom(messageText, email!);
-                        }else{
-                          await model.setRoomImage(messageText, email!, model.imageFile!);
-                        }
-                        model.imageFile = null;
-                        // 1つ前の画面に戻る
-                        Navigator.of(context).pop();
-                      },),
+                      Container(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          child: Text('作成'),
+                          onPressed: () async {
+                            final email = user.email; // AddPostPage のデータを参照
+                            // 投稿メッセージ用ドキュメント作成
+                            if(model.imageFile == null) {
+                              await model.setRoom(messageText, email!);
+                            }else{
+                              await model.setRoomImage(messageText, email!, model.imageFile!);
+                              model.endLoading();
+                            }
+                            model.imageFile = null;
+                            // 1つ前の画面に戻る
+                            Navigator.of(context).pop();
+                          },),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                model.isLoading ? Container(
+                  color: Colors.grey.withOpacity(0.5),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+                    : Container(),
+              ]
             ),
           );
         }

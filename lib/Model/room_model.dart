@@ -10,12 +10,25 @@ class RoomModel extends ChangeNotifier {
   String latestMessage = '';
   File? imageFile;
 
+  bool isLoading = false;
+
+  startLoading(){
+    isLoading = true;
+    notifyListeners();
+  }
+
+  endLoading(){
+    isLoading = false;
+    notifyListeners();
+  }
+
   void fetchRoom(String roomId){
     this.roomId = roomId;
     notifyListeners();
   }
 
   Future setRoomImage(String roomName,String email, File imageFile) async{
+    startLoading();
     imageUrl = await _uploadImage(imageFile);
     await FirebaseFirestore.instance
         .collection('rooms') // コレクションID指定
